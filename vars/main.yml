@@ -1,0 +1,17 @@
+---
+ssh_pubkeys:
+  gitlab.example2.com: |
+      gitlab.example2.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAwzZto+U1WUVW8T0xkOyUnDflCBE+G5Men457SXnYon+FY08ksiCvdw8eu7dOuTButxtkBtJ3p/C3OgOUH8wc1UrcFt0ZlaT1Ypt/JSmoUICLfihue6Golon72Ot2IK13LALI0Om+DVh3cqgEUYx/oHu6IvpWmBm2e9cNq1mxbCBu3iO6cvkX8QPYvcyT5Xljf66oCkyIvpO5Bz7j1fNuGAQ009wclNz9XjEiWqZo3UakNEnBCO5eW3vBta1+u1ZM8mBn2YVS/40IbmcVggIg3IpU5LQRI+wQjwP/FfMKo1F8sWOEkm1MJXSBXeUhoetGQIHQXdW3WgIDm0/NDE9KpQ==
+      gitlab.example2.com ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBAffh9pq6Ky95ee05hW7wHda57ZfL5Jg7cBjj1szZVeKmEJDkWUBTgibc54ZV2VNiwX50x5BtxiFTH5KqgOJv9o=
+      gitlab.example2.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAUJMMh5iriY6wt/b78vp++hNWWdeDwXVxUQZquZRedrbJ
+
+repositories:
+  - name: repository_name
+    fqdn: gitlab.example.com
+    repo_owner: satellite5qe
+    clone_user: https
+
+  - name: second_repository_name
+    fqdn: gitlab.example2.com
+    repo_owner: satelliteqe
+    clone_user: git

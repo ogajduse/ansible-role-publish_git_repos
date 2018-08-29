@@ -1,0 +1,16 @@
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = true
+[remote "origin"]
+{% if item.clone_user == "git" %}
+  url = {{ item.clone_user }}@{{ item.fqdn }}:{{ item.repo_owner }}/{{ item.name }}.git
+{% else %}
+  url = https://{{ item.fqdn }}/{{ item.repo_owner }}/{{ item.name }}.git
+{% endif %}
+{% if item.clone_user == "https" %}
+[http]
+	sslVerify = false
+{% endif %}
+[daemon]
+        uploadarch = true

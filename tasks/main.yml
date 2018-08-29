@@ -1,0 +1,100 @@
+---
+- name: List all servers their repositories are requiring SSH access
+  set_fact:
+    ssh_servers: "{{ repositories | selectattr('clone_user', 'equalto', 'git') | map(attribute='fqdn') | unique | list }}"
+
+- name: Install required packages
+  yum:
+    name: cronie
+    state: installed
+
+- name: Add source git server's SSH key
+  known_hosts:
+    name: "{{ item }}"
+    key: "{{ ssh_pubkeys[item] }}"
+    state: present
+  with_items:
+    - "{{ ssh_servers }}"
+  when: ssh_servers is defined
+  become: true
+  become_user: "{{ repository_owner }}"
+
+- name: Test connection to all ssh servers
+  command: ssh -T -o PasswordAuthentication=no git@{{ item }}
+  become: true
+  become_user: "{{ repository_owner }}"
+  with_items:
+    - "{{ ssh_servers }}"
+  changed_when: false
+  when: ssh_servers is defined
+  debugger: on_failed
+
+- name: Clone git repositories
+  git:
+    bare: yes
+    clone: yes
+    update: no
+    dest: "{{ repository_destination }}/{{ item.name }}.git"
+    repo: "{{ item.clone_user + '@' + item.fqdn + ':' if (item.clone_user == 'git') else 'https://' + item.fqdn + '/' }}{{ item.repo_owner }}/{{ item.name }}.git"
+    version: master
+  environment:
+    GIT_SSL_NO_VERIFY: 'true'
+  become: true
+  become_user: "{{ repository_owner }}"
+  with_items:
+    - "{{ repositories }}"
+
+- name: Patch config for each repo
+  template:
+    src: git_mirror-config.j2
+    dest: "{{ repository_destination }}/{{ item.name }}.git/config"
+    owner: "{{ repository_owner }}"
+    group: "{{ repository_group }}"
+    mode: "{{ repository_mode }}"
+  with_items:
+    - "{{ repositories }}"
+
+- name: Make repository exportable by daemon
+  copy:
+    content: ""
+    dest: "{{ repository_destination }}/{{ item.name }}.git/git-daemon-export-ok"
+    force: no
+    owner: "{{ repository_owner }}"
+    group: "{{ repository_group }}"
+    mode: "{{ repository_mode }}"
+  with_items: "{{ repositories }}"
+
+- name: Add an entry to crontab for each repository
+  cron:
+    name: "fetch {{ item.name }} repository"
+    special_time: hourly
+    user: "{{ repository_owner }}"
+    job: "cd {{ repository_destination }}/{{ item.name }}.git; git fetch -q origin master:master"
+    state: present
+  with_items:
+    - "{{ repositories }}"
+
+- name: Check repositories configuration
+  command: git fetch --quiet --dry-run origin master:master
+  args:
+    chdir: "{{ repository_destination }}/{{ item.name }}.git"
+  become: yes
+  become_user: "{{ repository_owner }}"
+  with_items:
+    - "{{ repositories }}"
+  register: repository_fetch
+  failed_when: repository_fetch.rc != 0
+  changed_when: false
+  tags:
+    - check_availability
+
+- name: Check availability of installed repositories
+  command: git ls-remote git://{{ inventory_hostname }}/{{ item.name }}.git
+  with_items:
+    - "{{ repositories }}"
+  register: repository_clone
+  delegate_to: 127.0.0.1
+  failed_when: repository_clone.rc != 0
+  changed_when: false
+  tags:
+    - check_availability

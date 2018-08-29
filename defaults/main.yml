@@ -1,0 +1,5 @@
+---
+repository_destination: "/var/lib/git"
+repository_owner: gitmirror
+repository_group: gitmirror
+repository_mode: 0644
