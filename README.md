@@ -6,7 +6,7 @@ This Ansible role fetches remote git repository and creates mirror on the given 
 Requirements
 ------------
 
-This role requires properly set up git mirror. For this purpose, please use `install_git_mirror` role.
+This role requires properly set up git mirror. For this purpose, please use `git_mirror` role.
 
 Role Variables
 --------------
@@ -49,11 +49,11 @@ This role is not dependent upon any galaxy roles.
 Example Playbook
 ----------------
 
-Here is a simple example of a publish_git_repos_on_mirror role:
+Here is a simple example of a publish_git_repos role:
 
     - hosts: servers
       roles:
-         - publish_git_repos_on_mirror
+         - publish_git_repos
 
 License
 -------
